@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<title>Переводчик</title>
+</head>
+<body style="padding: 0px; background-color: gray;">
+	<div style="padding-left: 10%; padding-right: 10%; width: 80%; font-family: cursive; font-size: large;">
+		<label for="modeSelect">Выберите режим:</label>
+		<select id="modeSelect">
+			<option value="1">Испортить</option>
+			<option value="2">Починить</option>
+		</select><br><br>
+		<textarea id="inputText" placeholder="Тескт" maxlength="200" style="width: 100%;"></textarea><br><br>
+		<textarea id="displayText" placeholder="Вывод результата" readonly style="width: 100%;"></textarea><br><br>
+		<button id="submitButton">Отправить</button>
+	</div>
+
+	<script>
+		// Обработчик кнопки "Отправить"
+		document.getElementById('submitButton').addEventListener('click', function() {
+			const mode = document.getElementById('modeSelect').value;  // выбранный режим
+			const inputText = document.getElementById('inputText').value;  // введённый текст
+			const displayArea = document.getElementById('displayText');
+
+			// Создание объекта с данными для отправки
+			const data = {
+				mode: mode,
+				text: inputText
+			};
+
+			fetch('/translator', {
+				method: 'POST',  // метод отправки
+				headers: {
+					'Content-Type': 'application/json'  // тип передаваемых данных
+				},
+				body: JSON.stringify(data)  // сериализация данных в JSON
+			})
+			.then(response => response.json())
+			.then(result => {
+				displayArea.textContent = `${result.message}`;
+			})
+			.catch(error => {
+				displayArea.textContent = `Произошла ошибка при отправке данных.`;
+			});
+		});
+	</script>
+</body>
+</html>
