@@ -46,6 +46,7 @@ class App:
 			headers = headers.decode()
 			headers = headers.split('\r\n')
 			line = headers.pop(0)
+			headers = {k: v for k, v in [h.split(': ', 1) for h in headers]}
 			method, path, version = line.split(' ')
 		except:
 			return
@@ -54,15 +55,23 @@ class App:
 			return user.send(header(404, 'Connection: close', msg='File not found'))
 			
 		if method == 'GET':
+			# линковка страниц и объектов
 			if path == '/':
 				path+='.html'
 			if path.endswith('/'):
 				path = path[:-1] + '.html'
 
+			# автоопределение типа
+			if path.endswith('.html'):
+				ct = 'Content-Type: text/html'
+			elif path.endswith('.css'):
+				ct = 'Content-Type: text/css'
+
+			# поиск объекта в кластере
 			if path in cl:
-				user.send(header(200, 'Connection: close', 'Content-Type: text/html; charset=UTF-8')+cl(path))
-			elif path.endswith('/'):
-				user.send(header(200, 'Connection: close', 'Content-Type: text/html; charset=UTF-8')+cl('/404.html'))
+				user.send(header(200, 'Connection: close', ct)+cl(path))
+			elif path.endswith('.html'):
+				user.send(header(200, 'Connection: close', ct)+cl('/404.html'))
 			else:
 				user.send(header(404, 'Connection: close', msg='File not found'))
 
@@ -91,5 +100,4 @@ class App:
 
 if __name__ == '__main__':
 	app = App()
-	# Thread(target=app.update, daemon=True).start()
 	app.accept_users()

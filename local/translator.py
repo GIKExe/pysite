@@ -7,6 +7,7 @@ __all__ = ['to_sh', 'from_sh']
 sl = {v: k+1 for k, v in enumerate(list('абвгдеёжзийклмнопрстуфхцчшщъыьэюя'))}
 ls = {v: k for k, v in sl.items()}
 
+
 def to_sh(text):
 	res = ''
 	for s in text:
@@ -35,6 +36,7 @@ def to_sh(text):
 		res += sf if isLower else sf.upper()
 	return res
 
+
 def from_sh(text):
 	res = ''
 	buf = None
@@ -54,6 +56,10 @@ def from_sh(text):
 			continue
 	return res
 
+
+class СyclicString(str):
+	def __init__(self, *args, **kwargs):
+		super().__init__(*args, **kwargs)
 
 if __name__ == '__main__':
 	x = to_sh('Привет, мир!')

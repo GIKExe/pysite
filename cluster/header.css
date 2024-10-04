@@ -1,0 +1,29 @@
+
+body {
+	margin: 0px;
+	font-family: Consolas;
+	font-size: 30px;
+	text-align: center;
+	background-color: #2f2f2f;
+}
+
+header {
+	height: 50px;
+	display: flex;
+	background-color: #1f1f1f;
+}
+
+header div.cell {
+	color: white;
+	padding: 0 10px;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	margin-right: 10px;
+	background-color: #2f2f2f;
+}
+
+a.cell {
+	color: inherit;
+	text-decoration: inherit;
+}

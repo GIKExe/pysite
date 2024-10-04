@@ -3,38 +3,53 @@
 <head>
 	<meta charset="utf-8">
 	<title>Переводчик</title>
+	<link rel="stylesheet" type="text/css" href="/header.css">
+	<style>
+		body { color: white !important; }
+		textarea, button, select {
+			background-color: #4f4f4f !important;
+			color: white !important;
+		}
+		textarea { width: 100%; height: 100px; font-size: 20px}
+		button { width: 200px; height: 50px; }
+		select { width: 100px; height: 30px; }
+	</style>
 </head>
-<body style="padding: 0px; background-color: gray;">
-	<div style="padding-left: 10%; padding-right: 10%; width: 80%; font-family: cursive; font-size: large;">
+
+<body>
+	<header>
+		<div class="cell"><a class="cell" href="/">Главная</a></div>
+		<div class="cell"><a class="cell" href="/translator/">Переводчик</a></div>
+	</header>
+
+	<div style="padding-left: 10%; padding-right: 10%; width: 80%;">
+		<br>
 		<label for="modeSelect">Выберите режим:</label>
 		<select id="modeSelect">
 			<option value="1">Испортить</option>
 			<option value="2">Починить</option>
 		</select><br><br>
-		<textarea id="inputText" placeholder="Тескт" maxlength="200" style="width: 100%;"></textarea><br><br>
-		<textarea id="displayText" placeholder="Вывод результата" readonly style="width: 100%;"></textarea><br><br>
+		<textarea id="inputText" placeholder="Тескт" maxlength="200"></textarea><br><br>
+		<textarea id="displayText" placeholder="Вывод результата" readonly></textarea><br><br>
 		<button id="submitButton">Отправить</button>
 	</div>
 
 	<script>
-		// Обработчик кнопки "Отправить"
 		document.getElementById('submitButton').addEventListener('click', function() {
-			const mode = document.getElementById('modeSelect').value;  // выбранный режим
-			const inputText = document.getElementById('inputText').value;  // введённый текст
+			const mode = document.getElementById('modeSelect').value;
+			const inputText = document.getElementById('inputText').value;
 			const displayArea = document.getElementById('displayText');
-
-			// Создание объекта с данными для отправки
 			const data = {
 				mode: mode,
 				text: inputText
 			};
 
 			fetch('/translator', {
-				method: 'POST',  // метод отправки
+				method: 'POST',
 				headers: {
-					'Content-Type': 'application/json'  // тип передаваемых данных
+					'Content-Type': 'application/json'
 				},
-				body: JSON.stringify(data)  // сериализация данных в JSON
+				body: JSON.stringify(data)
 			})
 			.then(response => response.json())
 			.then(result => {

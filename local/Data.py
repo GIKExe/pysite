@@ -76,7 +76,7 @@ class File:
 		self.t = time()
 		self.mt = mt
 		self.cl.update()
-		
+
 
 class Dir:
 	def check(self):
@@ -123,7 +123,7 @@ class Dir:
 
 class Cluster:
 	def __init__(self, path='cluster'):
-		self.dir = Dir(path)
+		self.dir = Dir(path, self)
 		self.ram_limit = 1*MB
 		self.path = path
 		self.paths = {}
@@ -157,9 +157,9 @@ class Cluster:
 		file.opath = self.create_opath(file.path)
 		self.paths[file.opath] = file
 		if self.ram + file.size > self.ram_limit:
-			return print(f'ADD 0 {opath}')
+			return print(f'ADD 0 {file.opath}')
 		file.cached = True
-		print(f'ADD 1 {opath}')
+		print(f'ADD 1 {file.opath}')
 
 	def change(self, file, opath, size, old_size, log=True):
 		ram = self.ram
