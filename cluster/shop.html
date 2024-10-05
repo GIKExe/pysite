@@ -2,7 +2,7 @@
 <html>
 <head>
 	<meta charset="utf-8">
-	<title>Главная</title>
+	<title>Магазин</title>
 	<link rel="stylesheet" type="text/css" href="/header.css">
 	<style>
 		div, a { color: white; }
@@ -20,6 +20,7 @@
 			box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
 			overflow: hidden;
 			text-align: center;
+			cursor: pointer;
 		}
 		.card img {
 			width: 100%;
@@ -49,57 +50,64 @@
 	</header>
 	
 	<div>
-		<h1>Объявления о продаже вещей</h1>
-		<div class="container">
-			<div class="card">
+		<h1>Крутые вещи продаются</h1>
+		<div class="container" id="container">
+<!-- 			<div class="card">
 				<img src="/shop/e4500.avif">
 				<div class="price">Бесплатно</div>
 				<div class="title">Процессор e4500</div>
-			</div>
-
-			<div class="card">
-				<img src="/shop/e3500.avif">
-				<div class="price">50 ₽</div>
-				<div class="title">Процессор e3500</div>
-			</div>
-
-			<div class="card">
-				<img src="/shop/e8300.avif">
-				<div class="price">100 ₽</div>
-				<div class="title">Процессор e8300</div>
-			</div>
-
-			<div class="card">
-				<img src="/shop/giga.avif">
-				<div class="price">500 ₽</div>
-				<div class="title">Мать GA-G31M-ES2L</div>
-			</div>
-
-			<div class="card">
-				<img src="/shop/ram1.avif">
-				<div class="price">25 ₽</div>
-				<div class="title">kingston DDR2 1GB</div>
-			</div>
-
-			<div class="card">
-				<img src="/shop/ram2.avif">
-				<div class="price">125 ₽</div>
-				<div class="title">corsair DDR2 1GB</div>
-			</div>
-
-			<div class="card">
-				<img src="/shop/ram3.avif">
-				<div class="price">50 ₽</div>
-				<div class="title">WB DDR2 1GB</div>
-			</div>
-
-			<div class="card">
-				<img src="/shop/ram4.avif">
-				<div class="price">50 ₽</div>
-				<div class="title">hunix DDR2 1GB</div>
-			</div>
+			</div> -->
 
 		</div>
 	</div>
+
+	<script>
+	// Функция для получения списка UUID и загрузки данных
+	async function loadItems() {
+		const container = document.getElementById('container')
+		try {
+			// Получаем список UUID с сервера
+			const response = await fetch('/shop/get', {method:'POST', headers:{'Accept':'application/json'},});
+			const uuidList = await response.json();
+
+			// Для каждого UUID получаем данные (изображение и JSON)
+			for (const uuid of uuidList) {
+				// Получаем JSON-файл для данного UUID
+				const jsonResponse = await fetch(`/shop/${uuid}.json`);
+				const itemData = await jsonResponse.json();
+
+				// Создаем элемент карточки
+				const card = document.createElement('div');
+				card.className = 'card';
+				card.onclick = function() { window.location.href = `/shop?${uuid}`; };
+
+				// Добавляем изображение
+				const img = document.createElement('img');
+				img.src = `/shop/${uuid}.avif`;
+				card.appendChild(img);
+
+				// Добавляем цену
+				const priceDiv = document.createElement('div');
+				priceDiv.className = 'price';
+				priceDiv.textContent = itemData.price === '0' ? 'Бесплатно' : itemData.price + '₽';
+				card.appendChild(priceDiv);
+
+				// Добавляем название
+				const titleDiv = document.createElement('div');
+				titleDiv.className = 'title';
+				titleDiv.textContent = itemData.title;
+				card.appendChild(titleDiv);
+
+				// Добавляем карточку в контейнер
+				container.appendChild(card);
+			}
+		} catch (error) {
+			console.error('Ошибка при загрузке данных:', error);
+		}
+	}
+
+	// Вызываем функцию для загрузки данных
+	loadItems();
+</script>
 </body>
 </html>

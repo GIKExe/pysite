@@ -4,7 +4,8 @@ __pycache__/
 *$py.class
 
 # other
-test.py
+test.*
+cluster/shop/
 
 # C extensions
 *.so

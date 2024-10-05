@@ -64,7 +64,7 @@ class File:
 		if (time() - self.t < self.ut): return
 		if not exists(self.path):
 			return self.cl.remove(self.opath)
-
+		self.cl.update()
 		mt = getmtime(self.path)
 		if (self.mt == mt): return
 		if self.mt != 0:
@@ -76,7 +76,6 @@ class File:
 		self.raw = self.read()
 		self.t = time()
 		self.mt = mt
-		self.cl.update()
 
 
 class Dir:

@@ -4,6 +4,67 @@
 	<meta charset="utf-8">
 	<title>Управление</title>
 	<link rel="stylesheet" type="text/css" href="/header.css">
+	<style>
+		body {
+			background-color: #2d2d2d;
+			color: white;
+			font-family: Arial, sans-serif;
+		}
+		.tab {
+			display: none;
+		}
+		.tab-header {
+			cursor: pointer;
+			background-color: #3a3a3a;
+			padding: 10px;
+			border-bottom: 1px solid #444;
+		}
+		.tab-header:hover {
+			background-color: #4a4a4a;
+		}
+		.tab-content {
+			padding: 15px;
+			border: 1px solid #444;
+		}
+		table {
+			width: 100%;
+			border-collapse: collapse;
+		}
+		th, td {
+			border: 1px solid #555;
+			padding: 10px;
+			text-align: left;
+		}
+		.form {
+			display: flex;
+		}
+		.form-left {
+			width: 33%;
+			padding: 10px;
+			border-right: 1px solid #555;
+		}
+		.form-right {
+			width: 66%;
+			padding: 10px;
+		}
+		.form-right input, .form-right textarea {
+			width: 100%;
+			padding: 8px;
+			margin-bottom: 10px;
+			background-color: #3a3a3a;
+			color: white;
+			border: none;
+		}
+		.form-right button {
+			padding: 10px;
+			background-color: #4a4a4a;
+			border: none;
+			cursor: pointer;
+		}
+		.form-right button:hover {
+			background-color: #5a5a5a;
+		}
+	</style>
 </head>
 
 <body>
@@ -11,5 +72,110 @@
 		<div class="cell"><a class="cell" href="/">Главная</a></div>
 		<div class="cell"><a class="cell" href="/shop/">Магазин</a></div>
 	</header>
+
+	<div class="tab-header" onclick="ramTab()">использование озу</div>
+	<div class="tab-content tab" id="tab-0">
+		<table>
+			<thead>
+				<tr>
+					<th style="width: 80%;">Путь</th>
+					<th style="width: 15%;">Размер</th>
+					<th style="width: 5%;">Кеш</th>
+				</tr>
+			</thead>
+			<tbody id="ram-usage"></tbody>
+		</table>
+	</div>
+
+	<div class="tab-header" onclick="postTab()">добавить объявление</div>
+	<div class="tab-content tab" id="tab-1">
+		<form id="add-item-form" class="form" onsubmit="submitForm(event)">
+			<div class="form-left">
+				<label for="photo">Фото</label>
+				<input type="file" id="photo" name="photo" accept="image/*" required>
+			</div>
+			<div class="form-right">
+				<div style="display: flex;">
+					<input style="width: 49%; margin-right: 1%;" min="3" max="50" type="text" id="title" name="title" placeholder="Название" required>
+					<input style="width: 24%; margin-right: 1%;" min="0" max="100000" type="number" id="price" name="price" placeholder="Цена" required>
+				</div>
+				<div style="display: flex;">
+					<textarea id="description" name="description" placeholder="Описание" rows="4" required></textarea>
+				</div>
+				<div style="display: flex;">
+					<input style="width: 24%; margin-right: 1%;" min="3" max="30" type="text" id="seller" name="seller" placeholder="Продавец" required>
+					<button style="width: 24%; margin-right: 1%;" type="submit">Отправить</button>
+				</div>
+			</div>
+		</form>
+	</div>
+
+	<script>
+		function ramTab() {
+			const tab = document.getElementById(`tab-0`);
+			if (tab.style.display === 'none') fetchRamUsage();
+			tab.style.display = tab.style.display === 'block' ? 'none' : 'block';
+		}
+
+		function postTab() {
+			const tab = document.getElementById(`tab-1`);
+			tab.style.display = tab.style.display === 'block' ? 'none' : 'block';
+		}
+
+		// Fetch data for RAM usage (first tab)
+		async function fetchRamUsage() {
+			const response = await fetch('/admin/ram', { method: 'POST' });
+			const data = await response.json();
+			const tableBody = document.getElementById('ram-usage');
+			tableBody.innerHTML = ''; // Clear the existing content
+			data.forEach(item => {
+				const row = document.createElement('tr');
+				row.innerHTML = `
+					<td>${item.path}</td>
+					<td>${item.size}</td>
+					<td>${item.cached ? 'Да' : 'Нет'}</td>
+				`;
+				tableBody.appendChild(row);
+			});
+		}
+
+		// Submit form data for second tab (Add Item)
+		async function submitForm(event) {
+			event.preventDefault();
+
+			const title = document.getElementById('title').value;
+			const price = document.getElementById('price').value;
+			const description = document.getElementById('description').value;
+			const seller = document.getElementById('seller').value;
+			const photo = document.getElementById('photo').files[0];
+
+			// Преобразование фото в Base64
+			let photoBase64 = '';
+			if (photo) {
+				const reader = new FileReader();
+				reader.readAsDataURL(photo); // Чтение файла как Data URL (Base64)
+				photoBase64 = await new Promise((resolve) => {
+					reader.onload = () => resolve(reader.result);
+				});
+			}
+
+			const data = {
+				title: title,
+				price: price,
+				description: description,
+				seller: seller,
+				photo: photoBase64,
+			};
+
+			const response = await fetch('/admin/add', {method:'POST', headers:{'Content-Type':'application/json',}, body:JSON.stringify(data)});
+
+			if (response.ok) {
+				alert('Объявление успешно добавлено');
+			} else {
+				alert('Произошла ошибка при добавлении объявления');
+			}
+		}
+	</script>
+
 </body>
 </html>

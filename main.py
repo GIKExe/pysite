@@ -4,6 +4,8 @@ from threading import Thread
 from time import time, sleep
 import os
 import json
+import base64
+import uuid
 
 # глобальные
 # локальные
@@ -38,23 +40,28 @@ class App:
 
 	def user_listen(self, user, addr):
 		cl = self.cl
-		try: raw = user.recv(10240)
-		except: return
-		if not raw: return
+		raw = user.recv(1*KB)
 
-		try:
-			headers, data = raw.split(b'\r\n\r\n', 1)
-			headers = headers.decode()
-			headers = headers.split('\r\n')
-			line = headers.pop(0)
-			headers = {k: v for k, v in [h.split(': ', 1) for h in headers]}
-			if ',' in headers['Accept']:
-				headers['Accept'] = headers['Accept'].split(',')
-			method, path, version = line.split(' ')
-		except:
-			return
+		headers, data = raw.split(b'\r\n\r\n', 1)
+		headers = headers.decode()
+		headers = headers.split('\r\n')
+		line = headers.pop(0)
+		headers = {k: v for k, v in [h.split(': ', 1) for h in headers]}
 
-		if path == '/admin' and addr[0] != '::1':
+		if 'Accept' in headers:
+			headers['Accept'] = (headers['Accept'].split(',') if ',' in headers['Accept'] else [headers['Accept'],])
+		else:
+			headers['Accept'] = ['*/*']
+
+		method, path, version = line.split(' ')
+
+		if 'Content-Length' in headers:
+			Content_Length = int(headers['Content-Length'])
+			while True:
+				if len(data) >= Content_Length: break
+				data += user.recv(128*KB)
+	
+		if path.startswith('/admin') and addr[0] != '::1':
 			return user.send(header(404, 'Connection: close', msg='File not found'))
 
 		# Accept: text/html,
@@ -70,7 +77,6 @@ class App:
 		# Сервер
 		# Content-Language: ru
 
-			
 		if method == 'GET':
 			# линковка страниц и объектов
 			match headers['Accept'][0]:
@@ -89,21 +95,55 @@ class App:
 				user.send(header(200, 'Connection: close', 'Content-Type: text/html')+cl('/404.html'))
 
 		elif method == 'POST':
-			if path == '/translator':
-				try:
-					data = json.loads(data)
-					mode = data['mode']
-					text = data['text']
-				except:
+			match path:
+				
+				case '/shop/get':
+					names = []
+					for name in cl.dir.dir['shop'].dir.keys():
+						if not name.endswith('.json'): continue
+						names.append(name.split('.')[0])
+					user.send(header(200, 'Content-Type: application/json', 'Connection: close')+json.dumps(names).encode())
+
+				case '/translator':
+					try:
+						data = json.loads(data)
+						mode = data['mode']
+						text = data['text']
+					except:
+						user.send(header(400, 'Connection: close'))
+					else:
+						if mode == "1":
+							text = translator.to_sh(text)
+						elif mode == "2":
+							text = translator.from_sh(text)
+						user.send(header(200, 'Content-Type: application/json', 'Connection: close')+json.dumps({'message':text}).encode())
+				
+				case '/admin/ram':
+					data = [{'path':file.opath, 'size':Konvert(file.ram), 'cached':file.cached} for file in self.cl.paths.values()]
+					user.send(header(200, 'Content-Type: application/json', 'Connection: close')+json.dumps(data).encode())
+				
+				case '/admin/add':
+					try:
+						data = json.loads(data)
+						title = data['title']
+						price = data['price']
+						description = data['description']
+						seller = data['seller']
+						photo = data['photo'].split(',', 1)[-1]
+						photo = base64.b64decode(photo)
+					except Exception as e:
+						print(e)
+						user.send(header(400, 'Connection: close'))
+					else:
+						text_uuid = uuid.uuid5(uuid.NAMESPACE_DNS, title+seller)
+						with open(f'{cl.name}/shop/{text_uuid}.avif', 'wb') as file:
+							file.write(photo)
+						with open(f'{cl.name}/shop/{text_uuid}.json', 'w') as file:
+							file.write(json.dumps({'title':title, 'price':price, 'description':description, 'seller':seller}))
+						user.send(header(200, 'Connection: close'))
+				
+				case other:
 					user.send(header(400, 'Connection: close'))
-				else:
-					if mode == "1":
-						text = translator.to_sh(text)
-					elif mode == "2":
-						text = translator.from_sh(text)
-					user.send(header(200, 'Content-Type: application/json', 'Connection: close')+json.dumps({'message':text}).encode())
-			else:
-				user.send(header(400, 'Connection: close'))
 
 	def accept_users(self):
 		while self.running:
