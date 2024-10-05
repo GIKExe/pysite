@@ -29,6 +29,7 @@ class App:
 		self.sock.listen()
 		self.users = []
 		self.cl = Cluster()
+		self.cl.ram_limit = 64*MB
 		self.cl.init()
 
 	def user_closer(self, user, addr):
@@ -47,33 +48,45 @@ class App:
 			headers = headers.split('\r\n')
 			line = headers.pop(0)
 			headers = {k: v for k, v in [h.split(': ', 1) for h in headers]}
+			if ',' in headers['Accept']:
+				headers['Accept'] = headers['Accept'].split(',')
 			method, path, version = line.split(' ')
 		except:
 			return
 
 		if path == '/admin' and addr[0] != '::1':
 			return user.send(header(404, 'Connection: close', msg='File not found'))
+
+		# Accept: text/html,
+		#					application/xhtml+xml,
+		#					application/xml;q=0.9,
+		#					image/avif,image/webp,
+		#					image/apng,
+		#					*/*;q=0.8,
+		#					application/signed-exchange;v=b3;q=0.7
+
+		# Accept-Encoding: gzip, deflate
+
+		# Сервер
+		# Content-Language: ru
+
 			
 		if method == 'GET':
 			# линковка страниц и объектов
-			if path == '/':
-				path+='.html'
-			if path.endswith('/'):
-				path = path[:-1] + '.html'
-
-			# автоопределение типа
-			if path.endswith('.html'):
-				ct = 'Content-Type: text/html'
-			elif path.endswith('.css'):
-				ct = 'Content-Type: text/css'
+			match headers['Accept'][0]:
+				case 'text/html':
+					if path.endswith('/'):
+						if path != '/': path = path[:-1]
+						path += '.html'
+					ct = 'Content-Type: text/html'
+				case other:
+					ct = 'Content-Type: '+other
 
 			# поиск объекта в кластере
 			if path in cl:
 				user.send(header(200, 'Connection: close', ct)+cl(path))
-			elif path.endswith('.html'):
-				user.send(header(200, 'Connection: close', ct)+cl('/404.html'))
 			else:
-				user.send(header(404, 'Connection: close', msg='File not found'))
+				user.send(header(200, 'Connection: close', 'Content-Type: text/html')+cl('/404.html'))
 
 		elif method == 'POST':
 			if path == '/translator':

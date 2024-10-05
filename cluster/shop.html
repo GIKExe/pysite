@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<title>Главная</title>
+	<link rel="stylesheet" type="text/css" href="/header.css">
+	<style>
+		div, a { color: white; }
+		h1 { text-align: center; }
+		.container {
+			display: grid;
+			grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+			gap: 20px;
+			max-width: 90%;
+			margin: 0 auto;
+		}
+		.card {
+			background: #fff;
+			border-radius: 8px;
+			box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+			overflow: hidden;
+			text-align: center;
+		}
+		.card img {
+			width: 100%;
+			height: 300px;
+			object-fit: scale-down;
+/*			object-fit: cover;*/
+		}
+		.price {
+			color: #28a745;
+		}
+		.title {
+			color: black;
+			margin-bottom: 10px;
+		}
+		.title, .price {
+			font-size: 0.8em;
+			margin-left: 10px;
+			text-align: left !important;
+		}
+	</style>
+</head>
+
+<body>
+	<header>
+		<div class="cell"><a class="cell" href="/">Главная</a></div>
+		<div class="cell"><a class="cell" href="/shop/">Магазин</a></div>
+	</header>
+	
+	<div>
+		<h1>Объявления о продаже вещей</h1>
+		<div class="container">
+			<div class="card">
+				<img src="/shop/e4500.avif">
+				<div class="price">Бесплатно</div>
+				<div class="title">Процессор e4500</div>
+			</div>
+
+			<div class="card">
+				<img src="/shop/e3500.avif">
+				<div class="price">50 ₽</div>
+				<div class="title">Процессор e3500</div>
+			</div>
+
+			<div class="card">
+				<img src="/shop/e8300.avif">
+				<div class="price">100 ₽</div>
+				<div class="title">Процессор e8300</div>
+			</div>
+
+			<div class="card">
+				<img src="/shop/giga.avif">
+				<div class="price">500 ₽</div>
+				<div class="title">Мать GA-G31M-ES2L</div>
+			</div>
+
+			<div class="card">
+				<img src="/shop/ram1.avif">
+				<div class="price">25 ₽</div>
+				<div class="title">kingston DDR2 1GB</div>
+			</div>
+
+			<div class="card">
+				<img src="/shop/ram2.avif">
+				<div class="price">125 ₽</div>
+				<div class="title">corsair DDR2 1GB</div>
+			</div>
+
+			<div class="card">
+				<img src="/shop/ram3.avif">
+				<div class="price">50 ₽</div>
+				<div class="title">WB DDR2 1GB</div>
+			</div>
+
+			<div class="card">
+				<img src="/shop/ram4.avif">
+				<div class="price">50 ₽</div>
+				<div class="title">hunix DDR2 1GB</div>
+			</div>
+
+		</div>
+	</div>
+</body>
+</html>

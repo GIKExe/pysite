@@ -67,12 +67,13 @@ class File:
 
 		mt = getmtime(self.path)
 		if (self.mt == mt): return
-		size = getsize(self.path)
-		if not self.cl.change(self, self.opath, size, self.size):
-			self.cached = False
-			self.raw = b''
+		if self.mt != 0:
+			size = getsize(self.path)
+			if not self.cl.change(self, self.opath, size, self.size):
+				self.cached = False
+				self.raw = b''
+			self.size = size
 		self.raw = self.read()
-		self.size = size
 		self.t = time()
 		self.mt = mt
 		self.cl.update()
@@ -114,6 +115,7 @@ class Dir:
 			path = join(self.path, name)
 			if isdir(path):
 				self.dir[name] = Dir(path, self.cl)
+				self.dir[name].update()
 			elif isfile(path):
 				self.dir[name] = File(path, self.cl)
 				self.cl.add(self.dir[name])
@@ -159,7 +161,7 @@ class Cluster:
 		if self.ram + file.size > self.ram_limit:
 			return print(f'ADD 0 {file.opath}')
 		file.cached = True
-		print(f'ADD 1 {file.opath}')
+		print(f'ADD 1 {file.opath} +{Konvert(file.ram)}')
 
 	def change(self, file, opath, size, old_size, log=True):
 		ram = self.ram
