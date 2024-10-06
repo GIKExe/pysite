@@ -5,7 +5,7 @@ from time import time, sleep
 import os
 import json
 import base64
-import uuid
+from uuid import uuid5, NAMESPACE_DNS
 
 # глобальные
 # локальные
@@ -59,8 +59,6 @@ class App:
 			headers['Accept'] = (headers['Accept'].split(',') if ',' in headers['Accept'] else [headers['Accept'],])
 		else:
 			headers['Accept'] = ['*/*']
-
-		
 
 		if 'Content-Length' in headers:
 			Content_Length = int(headers['Content-Length'])
@@ -127,6 +125,29 @@ class App:
 				case '/admin/ram':
 					data = [{'path':file.opath, 'size':Konvert(file.ram), 'cached':file.cached} for file in self.cl.paths.values()]
 					user.send(header(200, 'Content-Type: application/json', 'Connection: close')+json.dumps(data).encode())
+
+				case '/admin/rem':
+					try:
+						data = json.loads(data)
+						uuid = data['uuid']
+
+						opath = f'/shop/{uuid}.json'
+						file = cl.paths[opath]
+						os.remove(file.path)
+						cl.remove(opath)
+						del file
+
+						opath = f'/shop/{uuid}.avif'
+						file = cl.paths[opath]
+						os.remove(file.path)
+						cl.remove(opath)
+						del file
+						
+					except:
+						user.send(header(400, 'Connection: close'))
+						# raise
+					else:
+						user.send(header(200, 'Connection: close'))
 				
 				case '/admin/add':
 					try:
@@ -137,19 +158,22 @@ class App:
 						seller = data['seller']
 						photo = data['photo'].split(',', 1)[-1]
 						photo = base64.b64decode(photo)
-					except Exception as e:
-						print(e)
+					except:
 						user.send(header(400, 'Connection: close'))
+						raise
 					else:
-						text_uuid = uuid.uuid5(uuid.NAMESPACE_DNS, title+seller)
-						with open(f'{cl.name}/shop/{text_uuid}.avif', 'wb') as file:
+						uuid = uuid5(NAMESPACE_DNS, title+seller)
+						# !обновить директорию/файл в кластере
+						with open(f'{cl.name}/shop/{uuid}.avif', 'wb') as file:
 							file.write(photo)
-						with open(f'{cl.name}/shop/{text_uuid}.json', 'w') as file:
+						# !обновить директорию/файл в кластере
+						with open(f'{cl.name}/shop/{uuid}.json', 'w') as file:
 							file.write(json.dumps({'title':title, 'price':price, 'description':description, 'seller':seller}))
 						user.send(header(200, 'Connection: close'))
 				
 				case other:
 					user.send(header(400, 'Connection: close'))
+
 		user.close()
 
 	def accept_users(self):

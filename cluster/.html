@@ -13,6 +13,12 @@
 	<header>
 		<div class="cell"><a class="cell" href="/">Главная</a></div>
 		<div class="cell"><a class="cell" href="/shop/">Магазин</a></div>
+		<div class="cell" id="admin"><a class="cell" href="/admin/">Админ</a></div>
+		<script>
+			if (!window.location.href.startsWith('http://localhost/')) { 
+				document.getElementById('admin').style.display = 'none' 
+			}
+		</script>
 	</header>
 	
 	<div>

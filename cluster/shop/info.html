@@ -56,6 +56,13 @@
 			height: auto;
 			object-fit: scale-down;
 		}
+		button {
+			width: 50%;
+			border-radius: 5px;
+			margin: 5px;
+			cursor: pointer;
+			color: white;
+		}
 	</style>
 </head>
 
@@ -63,6 +70,12 @@
 	<header>
 		<div class="cell"><a class="cell" href="/">Главная</a></div>
 		<div class="cell"><a class="cell" href="/shop/">Магазин</a></div>
+		<div class="cell" id="admin"><a class="cell" href="/admin/">Админ</a></div>
+		<script>
+			if (!window.location.href.startsWith('http://localhost/')) { 
+				document.getElementById('admin').style.display = 'none' 
+			}
+		</script>
 	</header>
 
 	<div class="container">
@@ -84,7 +97,11 @@
 				</div>
 
 				<div style="height: 50px; display: flex;">
-					<span style="text-align: left; color: white;">Описание:</span>
+					<span style="width: 50%; text-align: left; color: white;">Описание:</span>
+					<div style="width: 50%; display: flex;">
+						<button style="background: green;" id="edit">Изменить</button>
+						<button style="background: red;" id="rem">Удалить</button>
+					</div>
 				</div>
 
 				<div style="display: flex; flex-grow: 1;">
@@ -97,12 +114,32 @@
 
 	<script>
 		async function loadInfo() {
-			const currentUrl = window.location.href;
-			const uuid = currentUrl.split('?')[1];
+			const uuid = window.location.href.split('?')[1];
+			const remButton = document.getElementById('rem');
+			const editButton = document.getElementById('edit');
+
+			if (!window.location.href.startsWith('http://localhost/')) {
+				remButton.style.display = 'none'
+				editButton.style.display = 'none'
+			}
 
 			try {
 				const jsonResponse = await fetch(`/shop/${uuid}.json`);
 				const itemData = await jsonResponse.json();
+
+				remButton.onclick = function() {
+					const data = {uuid: uuid};
+					fetch('/admin/rem', {method:'POST', body:JSON.stringify(data)})
+					.then(response => {
+						if (response.ok) { window.location.href = '/shop/'; }
+						else { alert('Не удалось удалить'); }
+					})
+					.catch(error => { alert('Ошибка:', error); });
+				}
+
+				editButton.onclick = function() {
+					window.location.href = `/admin/edit/?${uuid}`;
+				}
 
 				document.getElementById('photo').src = `/shop/${uuid}.avif`;
 				document.getElementById('price').textContent = itemData.price === '0' ? 'Бесплатно' : itemData.price + ' ₽';
