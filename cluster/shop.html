@@ -15,7 +15,7 @@
 			margin: 0 auto;
 		}
 		.card {
-			background: #fff;
+			background: #1f1f1f;
 			border-radius: 8px;
 			box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
 			overflow: hidden;
@@ -32,7 +32,7 @@
 			color: #28a745;
 		}
 		.title {
-			color: black;
+			color: white;
 			margin-bottom: 10px;
 		}
 		.title, .price {
@@ -50,55 +50,38 @@
 	</header>
 	
 	<div>
-		<h1>Крутые вещи продаются</h1>
-		<div class="container" id="container">
-<!-- 			<div class="card">
-				<img src="/shop/e4500.avif">
-				<div class="price">Бесплатно</div>
-				<div class="title">Процессор e4500</div>
-			</div> -->
-
-		</div>
+		<br><div class="container" id="container"></div>
 	</div>
 
 	<script>
-	// Функция для получения списка UUID и загрузки данных
 	async function loadItems() {
 		const container = document.getElementById('container')
 		try {
-			// Получаем список UUID с сервера
 			const response = await fetch('/shop/get', {method:'POST', headers:{'Accept':'application/json'},});
 			const uuidList = await response.json();
 
-			// Для каждого UUID получаем данные (изображение и JSON)
 			for (const uuid of uuidList) {
-				// Получаем JSON-файл для данного UUID
 				const jsonResponse = await fetch(`/shop/${uuid}.json`);
 				const itemData = await jsonResponse.json();
 
-				// Создаем элемент карточки
 				const card = document.createElement('div');
 				card.className = 'card';
-				card.onclick = function() { window.location.href = `/shop?${uuid}`; };
+				card.onclick = function() { window.location.href = `/shop/info/?${uuid}`; };
 
-				// Добавляем изображение
 				const img = document.createElement('img');
 				img.src = `/shop/${uuid}.avif`;
 				card.appendChild(img);
 
-				// Добавляем цену
 				const priceDiv = document.createElement('div');
 				priceDiv.className = 'price';
 				priceDiv.textContent = itemData.price === '0' ? 'Бесплатно' : itemData.price + '₽';
 				card.appendChild(priceDiv);
 
-				// Добавляем название
 				const titleDiv = document.createElement('div');
 				titleDiv.className = 'title';
 				titleDiv.textContent = itemData.title;
 				card.appendChild(titleDiv);
 
-				// Добавляем карточку в контейнер
 				container.appendChild(card);
 			}
 		} catch (error) {

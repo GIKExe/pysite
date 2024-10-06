@@ -5,7 +5,9 @@ __pycache__/
 
 # other
 test.*
-cluster/shop/
+cluster/shop/*.avif
+cluster/shop/*.json
+test/
 
 # C extensions
 *.so

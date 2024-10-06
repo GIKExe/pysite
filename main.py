@@ -40,20 +40,27 @@ class App:
 
 	def user_listen(self, user, addr):
 		cl = self.cl
-		raw = user.recv(1*KB)
-
-		headers, data = raw.split(b'\r\n\r\n', 1)
-		headers = headers.decode()
-		headers = headers.split('\r\n')
-		line = headers.pop(0)
-		headers = {k: v for k, v in [h.split(': ', 1) for h in headers]}
+		try:
+			raw = user.recv(1*KB)
+			headers, data = raw.split(b'\r\n\r\n', 1)
+			headers = headers.decode()
+			headers = headers.split('\r\n')
+			line = headers.pop(0)
+			method, path, version = line.split(' ')
+			if '?' in path:
+				path, lq = path.split('?', 1)
+			else:
+				lq = ''
+			headers = {k: v for k, v in [h.split(': ', 1) for h in headers]}
+		except:
+			return user.close()
 
 		if 'Accept' in headers:
 			headers['Accept'] = (headers['Accept'].split(',') if ',' in headers['Accept'] else [headers['Accept'],])
 		else:
 			headers['Accept'] = ['*/*']
 
-		method, path, version = line.split(' ')
+		
 
 		if 'Content-Length' in headers:
 			Content_Length = int(headers['Content-Length'])
@@ -62,7 +69,8 @@ class App:
 				data += user.recv(128*KB)
 	
 		if path.startswith('/admin') and addr[0] != '::1':
-			return user.send(header(404, 'Connection: close', msg='File not found'))
+			user.send(header(404, 'Connection: close', msg='File not found'))
+			return user.close()
 
 		# Accept: text/html,
 		#					application/xhtml+xml,
@@ -78,7 +86,6 @@ class App:
 		# Content-Language: ru
 
 		if method == 'GET':
-			# линковка страниц и объектов
 			match headers['Accept'][0]:
 				case 'text/html':
 					if path.endswith('/'):
@@ -88,7 +95,6 @@ class App:
 				case other:
 					ct = 'Content-Type: '+other
 
-			# поиск объекта в кластере
 			if path in cl:
 				user.send(header(200, 'Connection: close', ct)+cl(path))
 			else:
@@ -144,6 +150,7 @@ class App:
 				
 				case other:
 					user.send(header(400, 'Connection: close'))
+		user.close()
 
 	def accept_users(self):
 		while self.running:
