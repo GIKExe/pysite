@@ -181,19 +181,3 @@ class Cluster:
 		print(f'{Konvert(ram)}/{Konvert(self.ram_limit)}, {ram/self.ram_limit*100:.2f}%')
 
 
-# class Request:
-# 	def __init__(self, raw):
-# 		self.raw = raw
-# 		self.headers, self.data = raw.split(b'\r\n\r\n', 1)
-# 		self.headers = self.headers.decode()
-# 		self.headers = self.headers.split('\r\n')
-# 		self.method, self.path, self.version = self.headers.pop(0).split(' ', 2)
-
-
-# class Response:
-# 	def __init__(self):
-# 		...
-
-# 	@property
-# 	def raw(self):
-# 		return b''
