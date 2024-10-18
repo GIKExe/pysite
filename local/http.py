@@ -1,5 +1,5 @@
 from .sizes import *
-
+from . import url
 
 class Request:
 	def __init__(self, user, debug=False):
@@ -31,6 +31,8 @@ class Request:
 			path, query = path.split(x, 1)
 		else:
 			query = ''
+
+		path = url.decode(path)
 
 		self.method = method
 		self.path = path

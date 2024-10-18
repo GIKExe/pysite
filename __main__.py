@@ -13,7 +13,7 @@ from uuid import uuid5, NAMESPACE_DNS
 from .local.script import run_code
 from .local.data import Cluster
 from .local.http import *
-
+from .local import url
 
 def header(code, *x, msg='OK'):
 	return ('\r\n'.join([f'HTTP/1.1 {code} {msg}'] + list(x) + ['']*2)).encode()
@@ -52,7 +52,9 @@ class App:
 		path = req.path
 		headers = req.headers
 
-		if path.endswith('.system.py'):
+		print(path)
+
+		if path.endswith('.sys.py'):
 			return user.send(header(403))
 
 		ct = 'Content-Type: '+headers['Accept'][0]
@@ -73,11 +75,10 @@ class App:
 		path = req.path
 		headers = req.headers
 
-		if (x := path+'.system.py') in cl: path = x
+		if (x := path+'.sys.py') in cl: path = x
 		else: return user.send(header(400))
 
 		code = cl(path).decode('UTF8') # запрашиваю скрипт из кластера
-		# print(globals())
 		run_code(code, req.path.rsplit('/', 1)[-1],
 			user=user,
 			req=req,
@@ -85,7 +86,7 @@ class App:
 			cl=cl,
 			__name__=__name__,
 			__package__=__package__,
-		) # выполняем локальный скрипт /*/*.system.py с user, cl, req, header
+		) # выполняем локальный скрипт /*/*.sys.py с user, cl, req, header
 
 	def user_listen(self, user, addr):
 		cl = self.cl
@@ -102,13 +103,7 @@ class App:
 			case other_method:
 				user.send(header(400, 'Connection: close'))
 				# match path:
-				# 	case '/shop/get':
-				# 		names = []
-				# 		for name in cl.dir.dir['shop'].dir.keys():
-				# 			if not name.endswith('.json'): continue
-				# 			names.append(name.split('.')[0])
-				# 		user.send(header(200, 'Content-Type: application/json', 'Connection: close')+json.dumps(names).encode())
-				
+
 				# 	case '/admin/rem':
 				# 		try:
 				# 			data = json.loads(data)
