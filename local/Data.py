@@ -8,21 +8,6 @@ from .sizes import *
 # __all__ = ['File', 'Dir', 'Cluster']
 
 
-# class BetterDict(dict):
-# 	def __init__(self, d):
-# 		for key, value in d.items():
-# 			self.__setattr__(key, value)
-
-# 	def __getattr__(self, key):
-# 		return (self[key] if key in self else None)
-
-# 	def __setattr__(self, key, value):
-# 		self[key] = (BetterDict(value) if type(value) is dict else value)
-
-# 	def __delattr__(self, key):
-# 		del self[key]
-
-
 class File:
 	def check(self):
 		if not exists(self.path):

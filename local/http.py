@@ -1,6 +1,22 @@
 from .sizes import *
 from . import url
 
+
+# class BetterDict(dict):
+# 	def __init__(self, d):
+# 		for key, value in d.items():
+# 			self.__setattr__(key, value)
+
+# 	def __getattr__(self, key):
+# 		return (self[key] if key in self else None)
+
+# 	def __setattr__(self, key, value):
+# 		self[key] = (BetterDict(value) if type(value) is dict else value)
+
+# 	def __delattr__(self, key):
+# 		del self[key]
+
+
 class Request:
 	def __init__(self, user, debug=False):
 		# сырые данные
@@ -55,5 +71,24 @@ class Request:
 
 
 class Response:
-	def __init__(self):
-		...
+	def __init__(self, headers={}, code=200, msg='OK', data=''):
+		self.version = 'HTTP/1.1'
+		self.code = code
+		self.msg = msg
+
+		if (x := 'Connection') not in headers: headers[x] = 'close'
+		self.headers = {k: v for k,v in headers.items()}
+
+		self.data = data
+
+	@property
+	def raw(self):
+		b1 = f'{self.version} {self.code} {self.msg}'.encode()
+		if (x := len(self.data)) > 0:
+			self.headers['Content-Length'] = x
+		b2 = '\r\n'.join([f'{k}: {v}' for k,v in self.headers.items()]).encode()
+		b3 = (self.data.encode() if type(self.data) is str else self.data)
+		return b'\r\n'.join([b1, b2, b'', b3])
+
+	def send(self, user):
+		user.send(self.raw)
